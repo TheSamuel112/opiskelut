@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Opiskelut">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Opiskelut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Aina tumma. Yksi rohkea elementti: lähtölaskentakortti isoilla tiiviillä numeroilla. */
+  --bg:#0b0d0f; --card:#15181b; --ink:#eef0ee; --soft:#a2aaaf; --faint:#69737a; --line:#22272b;
+  --hero:#1b2024; --hero-ink:#f4f5f2; --hero-soft:#95a0a6;
+  --accent:#7b93ff; --uni:#7b93ff; --vamk:#f06595;
+  --red:#ff6b57; --orange:#ffa94d; --yellow:#f2c94c; --green:#51cf8a;
+  --red-bg:#3a1c18; --tint:#1c2240;
+  --display:"Big Shoulders Display",Impact,"Arial Narrow",sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:18px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+main{max-width:560px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 18px calc(104px + env(safe-area-inset-bottom))}
+.top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.hello{font-weight:700;font-size:22px;letter-spacing:-.01em}
+.date{color:var(--soft);font-size:14px}
+.sync{color:var(--faint);font-size:12px;margin-top:2px}
+.sync.err{color:var(--orange)}
+
+/* HERO */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:26px;padding:20px 20px 18px;position:relative;overflow:hidden}
+.hero .lbl{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--hero-soft);display:flex;gap:8px;align-items:center}
+.hero .lbl i{width:8px;height:8px;border-radius:50%;background:var(--u,var(--green));display:inline-block}
+.count{font:900 92px/0.86 var(--display);letter-spacing:-.01em;margin:14px 0 4px;display:flex;align-items:baseline;gap:10px;font-variant-numeric:tabular-nums;color:var(--u,var(--hero-ink))}
+.count small{font:800 30px var(--display);color:var(--hero-soft);letter-spacing:.02em;margin-right:6px}
+.hero h2{font:700 21px/1.2 var(--body);margin:10px 0 4px;text-wrap:balance}
+.hero .sub{color:var(--hero-soft);font-size:14px}
+.hero .acts{display:flex;gap:8px;margin-top:16px}
+.hbtn{border:0;border-radius:99px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer;background:var(--hero-ink);color:var(--hero);text-decoration:none;display:inline-flex;align-items:center}
+.hbtn.ghost{background:transparent;color:var(--hero-ink);box-shadow:inset 0 0 0 1.5px #ffffff33}
+.hero .bar{position:absolute;left:0;bottom:0;height:4px;background:var(--u,var(--green));width:var(--p,30%)}
+@media (prefers-reduced-motion:no-preference){.hero{animation:rise .5s cubic-bezier(.2,.8,.2,1)} @keyframes rise{from{transform:translateY(8px)}to{transform:none}}}
+
+/* SECTIONS */
+section{margin-top:26px}
+.sh{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 10px}
+.sh h3{margin:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.sh button{border:0;background:none;color:var(--accent);font-weight:600;font-size:14px;cursor:pointer;padding:0}
+.box{background:var(--card);border-radius:var(--r);overflow:hidden}
+.empty{color:var(--faint);padding:16px;font-size:15px}
+
+/* TIMELINE */
+.tl{padding:6px 0}
+.tli{display:grid;grid-template-columns:62px 14px 1fr;gap:0 10px;padding:10px 16px 10px 14px;align-items:start}
+.tli .t{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;text-align:right;line-height:1.25}
+.tli .t span{display:block;color:var(--faint);font-weight:500;font-size:12.5px}
+.tli .rail{position:relative;align-self:stretch;display:flex;justify-content:center}
+.tli .rail::before{content:"";position:absolute;top:0;bottom:-20px;width:2px;background:var(--line)}
+.tli:last-child .rail::before{bottom:auto;height:12px}
+.tli .dot{position:relative;width:12px;height:12px;border-radius:50%;margin-top:4px;background:var(--card);box-shadow:inset 0 0 0 3px var(--c,var(--uni))}
+.tli.now .dot{background:var(--c,var(--uni))}
+.tli.past{opacity:.45}
+.tli .n{font-weight:600;line-height:1.3}
+.tli .m{color:var(--soft);font-size:13.5px;margin-top:1px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:2px}
+.tag.now{background:var(--c,var(--uni));color:#fff}
+.tag.exam{background:var(--red-bg);color:var(--red)}
+.tli.exam .n{color:var(--red)}
+
+/* ROWS */
+.row{display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.row:first-child{border-top:0}
+.row .ud{width:10px;height:10px;border-radius:50%;background:var(--u,var(--faint))}
+.row .n{font-weight:600;line-height:1.3}
+.row .m{color:var(--soft);font-size:13.5px;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.row .r{text-align:right;white-space:nowrap}
+.row .r b{display:block;font:800 22px/1 var(--display);color:var(--u,var(--ink));font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.row .r span{font-size:12.5px;color:var(--faint)}
+.row.done .n{text-decoration:line-through;color:var(--faint)}
+.row.done .ud{background:var(--green)}
+.sch{font-size:11.5px;font-weight:700;color:var(--uni)}
+.sch.vamk{color:var(--vamk)}
+.req{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.req.must{background:var(--red-bg);color:var(--red)}
+.req.pts{background:var(--tint);color:var(--accent)}
+.req.opt{color:var(--soft);box-shadow:inset 0 0 0 1.2px var(--line)}
+.req.unk{color:var(--faint);box-shadow:inset 0 0 0 1.2px var(--line);border:1px dashed transparent}
+.hero .req{vertical-align:2px;margin-left:8px}
+.hero .req.opt,.hero .req.unk{color:var(--hero-soft);box-shadow:inset 0 0 0 1.2px #ffffff33}
+.det{padding:0 16px 16px 38px;color:var(--soft);font-size:14.5px;display:grid;gap:10px}
+.det p{margin:0;max-width:60ch}
+.det .acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:99px;padding:9px 15px;font-weight:700;font-size:14px;cursor:pointer;background:var(--ink);color:var(--bg);text-decoration:none}
+.btn.line{background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ok{background:var(--green);color:#fff}
+
+/* SEGMENTED + WEEK */
+.seg{display:flex;background:var(--card);border-radius:99px;padding:4px;gap:2px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:none;border-radius:99px;padding:8px 6px;font-weight:600;font-size:14px;color:var(--soft);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ptitle{font:900 44px/1 var(--display);letter-spacing:.005em;margin:6px 4px 16px;text-transform:uppercase}
+.wk{display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px}
+.wk b{font-weight:700}
+.wk .nav{display:flex;gap:6px}
+.wk .nav button{width:38px;height:38px;border-radius:50%;border:0;background:var(--card);cursor:pointer;font-size:18px;font-weight:700}
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.days.seven{grid-template-columns:repeat(7,1fr)}
+.days button{border:0;background:var(--card);border-radius:14px;padding:9px 0 8px;cursor:pointer;display:grid;gap:2px;justify-items:center}
+.days button small{font-size:12px;color:var(--soft);font-weight:600;text-transform:uppercase}
+.days button b{font:800 24px/1 var(--display)}
+.days button i{width:5px;height:5px;border-radius:50%;background:var(--faint);opacity:var(--o,0)}
+.days button.ex i{background:var(--red);opacity:1}
+.days button.today small{color:var(--accent)}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.days button[aria-pressed="true"] small{color:var(--bg);opacity:.7}
+
+/* REG */
+.pill{font-size:12px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--tint);color:var(--accent);white-space:nowrap}
+.pill.hot{background:var(--red-bg);color:var(--red)}
+.pill.ok{background:none;color:var(--green);box-shadow:inset 0 0 0 1.5px var(--green)}
+.pill.mute{background:none;color:var(--faint);box-shadow:inset 0 0 0 1.5px var(--line)}
+
+.notice{padding:14px 16px;border-top:1px solid var(--line);font-size:14.5px}
+.notice:first-child{border-top:0}
+.notice .m{color:var(--faint);font-size:12.5px;margin-bottom:3px}
+
+/* PIN */
+.lock{min-height:80vh;display:grid;place-content:center;gap:18px;text-align:center}
+.lock h1{font:900 64px/0.9 var(--display);margin:0;text-transform:uppercase}
+.lock p{color:var(--soft);margin:0}
+.lock input{font:800 34px var(--display);letter-spacing:.3em;text-align:center;background:var(--card);color:var(--ink);border:0;border-radius:16px;padding:14px;width:220px;justify-self:center}
+.lock .err{color:var(--red);min-height:1.2em;font-size:14px}
+/* NAV */
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));display:flex;gap:4px;background:color-mix(in srgb,var(--ink) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:99px;padding:6px;box-shadow:0 10px 30px #0003}
+nav button{border:0;background:none;color:var(--bg);opacity:.6;border-radius:99px;padding:9px 12px;font-weight:700;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:6px}
+nav button svg{width:19px;height:19px;flex:none}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--ink);opacity:1}
+nav button:not([aria-selected="true"]) span{display:none}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="main"><div class="lock"><h1>Opiskelut</h1><p>Ladataan…</p></div></main>
+<nav role="tablist" aria-label="Näkymät">
+  <button role="tab" id="t-koti" data-v="koti" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Koti</span></button>
+  <button role="tab" id="t-dl" data-v="dl" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg><span>Deadlinet</span></button>
+  <button role="tab" id="t-lk" data-v="lk" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Lukkari</span></button>
+  <button role="tab" id="t-il" data-v="il" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h9"/></svg><span>Ilmot</span></button>
+  <button role="tab" id="t-pt" data-v="pt" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Pisteet</span></button>
+</nav>
+<script>
+const SNAPSHOT = {deadlines:[],lessons:[],registrations:[],notices:[]};
+const EXTRA0 = {};
+const GRADES0 = {courses:[]};
+let BASE = SNAPSHOT, EXTRA = EXTRA0, GRADES = GRADES0, DATA = null, DONE = {}, doneRef = null, canWrite = true, syncMsg = "", syncErr = false;
+function merge(){
+  const b = BASE||{}, e = EXTRA||{};
+  const ids = new Set((e.deadlines||[]).map(x=>x.id));
+  const exk = x => x.type==="tentti" ? x.course+"|"+String(x.due).slice(0,10) : null;
+  const exams = new Set((e.deadlines||[]).map(exk).filter(Boolean));
+  const lk = l => l.date+"|"+(l.start||"")+"|"+(l.title||"").split(/[ ,–-]/)[0];
+  const lks = new Set((e.lessons||[]).map(lk));
+  DATA = {...b,
+    deadlines: [...(b.deadlines||[]).filter(x=>!ids.has(x.id) && !exams.has(exk(x))), ...(e.deadlines||[])],
+    lessons: [...(b.lessons||[]).filter(l=>!lks.has(lk(l))), ...(e.lessons||[])],
+    registrations: [...(b.registrations||[]), ...(e.registrations||[])],
+    notices: [...(b.notices||[]), ...(e.notices||[])]};
+}
+merge();
+const VIEWS = ["koti","dl","lk","il","pt"];
+let view = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "koti";
+let filter = "kaikki", showDone = false, open = null, weekOff = 0, selDay = null;
+const $m = document.getElementById("main");
+const WD = ["su","ma","ti","ke","to","pe","la"], WDL = ["sunnuntai","maanantai","tiistai","keskiviikko","torstai","perjantai","lauantai"];
+const MON = ["tammikuuta","helmikuuta","maaliskuuta","huhtikuuta","toukokuuta","kesäkuuta","heinäkuuta","elokuuta","syyskuuta","lokakuuta","marraskuuta","joulukuuta"];
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const key = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const dshort = d => `${WD[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}.`;
+const hm = d => `${d.getHours()}.${String(d.getMinutes()).padStart(2,"0")}`;
+const tfmt = s => s ? s.replace(/^0/,"").replace(":",".") : "";
+const now = () => Date.now();
+function urg(ms){ const h = ms/36e5; return h < 24 ? "var(--red)" : h < 72 ? "var(--orange)" : h < 168 ? "var(--yellow)" : "var(--faint)"; }
+function rel(ms){ if (ms < 0) return {big:"0", unit:"min"}; const m = ms/6e4, h = m/60, d = h/24;
+  if (h < 1) return {big:String(Math.max(1,Math.round(m))), unit:"min"};
+  if (h < 48) return {big:String(Math.floor(h)), unit:"h"};
+  return {big:String(Math.floor(d)), unit:"pv"}; }
+function schChip(s){ return `<span class="sch ${s==="VAMK"?"vamk":""}">${esc(s==="VAMK"?"VAMK":"UWASA")}</span>`; }
+const REQ = {must:["must","Pakollinen"], pts:["pts","Antaa pisteitä"], opt:["opt","Vapaaehtoinen"], flex:["opt","Joustava"], rec:["opt","Suositus"], ifneed:["opt","Tarvittaessa"], unk:["unk","Ei tiedossa"]};
+const REQWHY = {
+  must:"Pakollinen kurssin läpäisyyn.",
+  pts:"Ei yksinään pakollinen, mutta antaa pisteitä, jotka vaikuttavat läpäisyyn tai arvosanaan. Katso Pisteet-välilehti.",
+  opt:"Vapaaehtoinen, ei vaikuta arvosanaan.",
+  flex:"Itse tehtävä on pakollinen, mutta voit palauttaa sen myös myöhempään palautuserään (viimeistään 31.5.2027).",
+  rec:"Opettajan suositusaika. Varsinainen takaraja on myöhemmin.",
+  ifneed:"Vain jos tarvitset uusintaa.",
+  unk:"Kurssisivulta ei selvinnyt, onko tämä pakollinen. Tarkista opettajalta tai kurssin ohjeista."};
+function reqOf(x){
+  if (x.req && REQ[x.req]) return x.req;
+  const t = (x.title||"") + " " + (x.note||""), c = x.course||"";
+  if (/suositus/i.test(t)) return "rec";
+  if (/uusinta/i.test(t)) return /Teknillisen matematiikan/.test(c) ? "must" : "ifneed";
+  if (x.type==="tentti" || /koe\b|lopputentti/i.test(t)) return "must";
+  if (/Digitaalitekniikka/.test(c) && /Lopputesti|Ennakkotentti/i.test(t)) return "pts";
+  if (/Lineaarialgebra/.test(c) && /Lisäteht/i.test(t)) return "opt";
+  if (/Mekaniikka/.test(c) && /Kertausteht/i.test(t)) return "pts";
+  if (/Tietokone työvälineenä/.test(c)) return /Viimeinen/i.test(t) ? "must" : "flex";
+  if (/raportti|mittauspöytäkirja|käytäntötentti|vertaisarvio|laboratorioraportit/i.test(t)) return "must";
+  return "unk";
+}
+const reqChip = x => { const r = REQ[reqOf(x)]; return `<span class="req ${r[0]}">${r[1]}</span>`; };
+const deadlines = () => (DATA.deadlines||[]).filter(x => new Date(x.due) > now() - 2*36e5).sort((a,b)=>new Date(a.due)-new Date(b.due));
+const lessonsOn = k => (DATA.lessons||[]).filter(l=>l.date===k).sort((a,b)=>(a.start||"99").localeCompare(b.start||"99"));
+function regState(r){
+  if (DONE[r.id]) return {txt:"Ilmoittauduttu", cls:"ok", sort:9e15};
+  if (!r.closes) return {txt:"Ei ilmoa", cls:"mute", sort:8e15};
+  const c = new Date(r.closes), o = r.opens ? new Date(r.opens) : null;
+  if (c < now()) return {txt:"Päättynyt", cls:"mute", sort:7e15};
+  if (o && o > now()) return {txt:`Aukeaa ${o.getDate()}.${o.getMonth()+1}.`, cls:"", sort:+o};
+  const days = Math.ceil((c-now())/864e5);
+  return {txt: days <= 1 ? "Sulkeutuu tänään" : `Auki · ${days} pv`, cls: days <= 7 ? "hot" : "", sort:+c, openNow:true};
+}
+
+function hero(){
+  const up = deadlines().filter(x=>!DONE[x.id] && new Date(x.due) > now());
+  const x = up[0];
+  if (!x) return `<div class="hero"><div class="lbl"><i></i>Ei tulevia deadlineja</div><div class="count">0<small>kpl</small></div><h2>Kaikki tehty. Hyvä!</h2></div>`;
+  const ms = new Date(x.due) - now(), d = new Date(x.due), h = ms/36e5;
+  const u = urg(ms).replace("var(--faint)","var(--hero-ink)");
+  let big;
+  if (h < 1) big = `${Math.max(1,Math.round(ms/6e4))}<small>min</small>`;
+  else if (h < 24) big = `${Math.floor(h)}<small>h</small>${Math.floor((ms%36e5)/6e4)}<small>min</small>`;
+  else big = `${Math.floor(h/24)}<small>pv</small>${Math.floor(h%24)}<small>h</small>`;
+  const p = Math.max(6, Math.min(100, 100 - (h/(14*24))*100));
+  return `<div class="hero" style="--u:${u};--p:${p}%">
+    <div class="lbl"><i></i>Seuraava ${x.type==="tentti"?"tentti":"deadline"}</div>
+    <div class="count">${big}</div>
+    <h2>${esc(x.title)}${reqChip(x)}</h2>
+    <div class="sub">${esc(x.course)} · ${dshort(d)} klo ${hm(d)}</div>
+    <div class="acts">${canWrite?`<button class="hbtn" data-done="${esc(x.id)}">Merkitse tehdyksi</button>`:""}${x.url?`<a class="hbtn ghost" href="${esc(x.url)}" target="_blank" rel="noopener">Avaa</a>`:""}</div>
+    <div class="bar"></div></div>`;
+}
+function timeline(list, k){
+  const isToday = k === key(new Date()); const nowHM = new Date().toTimeString().slice(0,5);
+  let seenNext = false;
+  return `<div class="box tl">${list.map(l=>{
+    const c = l.kind==="tentti" ? "var(--red)" : l.school==="VAMK" ? "var(--vamk)" : "var(--uni)";
+    let cls = "", tag = "";
+    if (isToday && l.start){ if (l.end && l.end <= nowHM) cls="past"; else if (l.start <= nowHM) {cls="now"; tag='<span class="tag now">Nyt</span>';} else if(!seenNext){seenNext=true; tag='<span class="tag now" style="background:none;color:var(--c);box-shadow:inset 0 0 0 1.5px var(--c)">Seuraavaksi</span>';} }
+    if (l.kind==="tentti") cls += " exam";
+    const meta = [l.location, l.kind==="labra"&&!l.location?"Labra":"", l.note].filter(Boolean).join(" · ");
+    return `<div class="tli ${cls}" style="--c:${c}"><div class="t">${l.start?tfmt(l.start):"–"}<span>${tfmt(l.end)}</span></div><div class="rail"><div class="dot"></div></div><div><div class="n">${esc(l.title)}${tag}</div><div class="m">${esc(meta || (l.school==="VAMK"?"VAMK":""))}</div></div></div>`;
+  }).join("")}</div>`;
+}
+function dlRow(x){
+  const d = new Date(x.due), ms = d - now(), r = rel(ms), done = !!DONE[x.id], isOpen = open === x.id;
+  return `<button class="row ${done?"done":""}" style="--u:${done?"var(--green)":urg(ms)}" data-open="${esc(x.id)}" aria-expanded="${isOpen}">
+    <div class="ud"></div>
+    <div><div class="n">${esc(x.title)}</div><div class="m">${reqChip(x)}${schChip(x.school)}<span>${esc(x.course)}</span></div></div>
+    <div class="r"><b>${done?"✓":r.big+'<small style="font-size:14px;margin-left:2px">'+r.unit+"</small>"}</b><span>${dshort(d)} ${hm(d)}</span></div>
+  </button>${isOpen?`<div class="det"><p><b style="color:var(--ink)">${REQ[reqOf(x)][1]}:</b> ${REQWHY[reqOf(x)]}</p>${x.note?`<p>${esc(x.note)}</p>`:""}<p style="font-size:13px;color:var(--faint)">Lähde: ${esc(x.source||"")}</p><div class="acts">${canWrite?`<button class="btn ${done?"ok":""}" data-done="${esc(x.id)}">${done?"✓ Tehty":"Merkitse tehdyksi"}</button>`:""}${x.url?`<a class="btn line" href="${esc(x.url)}" target="_blank" rel="noopener">Avaa Moodlessa</a>`:""}</div></div>`:""}`;
+}
+function examRow(x){
+  const d = new Date(x.due), ms = d-now(), r = rel(ms);
+  return `<button class="row" style="--u:${urg(ms)};grid-template-columns:60px 1fr auto" data-go-dl="${esc(x.id)}">
+    <div style="text-align:center;line-height:1"><b style="font:900 23px var(--display);display:block">${d.getDate()}.${d.getMonth()+1}.</b><span style="font-size:12px;color:var(--soft);text-transform:uppercase;font-weight:700">${WD[d.getDay()]}</span></div>
+    <div><div class="n">${esc(x.course)}</div><div class="m">${schChip(x.school)}<span>${esc(x.title.replace(/\s*\(klo.*\)/,""))} · klo ${hm(d)}</span></div></div>
+    <div class="r"><b>${r.big}<small style="font-size:14px;margin-left:2px">${r.unit}</small></b></div></button>`;
+}
+function regRow(r){
+  const s = regState(r), isOpen = open === r.id;
+  const sub = r.closes ? `Viimeistään ${dshort(new Date(r.closes))}` : (r.where||"");
+  return `<button class="row" style="grid-template-columns:1fr auto" data-open="${esc(r.id)}" aria-expanded="${isOpen}">
+    <div><div class="n">${esc(r.exam.replace(/^Kurssi-ilmo: /,""))}</div><div class="m">${schChip(r.school)}<span>${esc(r.where)}${r.closes?" · "+esc(sub):""}</span></div></div>
+    <span class="pill ${s.cls}">${esc(s.txt)}</span></button>
+    ${isOpen?`<div class="det" style="padding-left:16px">${r.note?`<p>${esc(r.note)}</p>`:""}<div class="acts">${canWrite&&r.closes?`<button class="btn ${DONE[r.id]?"ok":""}" data-done="${esc(r.id)}">${DONE[r.id]?"✓ Ilmoittauduttu":"Merkitse ilmoittautuneeksi"}</button>`:""}${r.url?`<a class="btn line" href="${esc(r.url)}" target="_blank" rel="noopener">${r.where==="Peppi"?"Avaa Peppi":"Avaa"}</a>`:""}</div></div>`:""}`;
+}
+
+function vKoti(){
+  const t = new Date(), hr = t.getHours();
+  const greet = hr < 5 ? "Hyvää yötä" : hr < 10 ? "Huomenta" : hr < 17 ? "Moi" : "Iltaa";
+  let dayK = key(t), lbl = "Tänään", ls = lessonsOn(dayK);
+  const nowHM = t.toTimeString().slice(0,5);
+  if (!ls.length || ls.every(l=>l.end && l.end <= nowHM)){ for (let i=1;i<8;i++){ const d=new Date(t); d.setDate(t.getDate()+i); const l=lessonsOn(key(d)); if(l.length){ ls=l; dayK=key(d); lbl = i===1?"Huomenna":WDL[d.getDay()].replace(/^./,c=>c.toUpperCase())+` ${d.getDate()}.${d.getMonth()+1}.`; break; } } }
+  const regs = (DATA.registrations||[]).map(r=>({r,s:regState(r)})).filter(o=>{ const course=/^Kurssi-ilmo/.test(o.r.exam); if(o.s.openNow) return !course || new Date(o.r.closes)-now()<21*864e5; return !!(o.r.opens && !DONE[o.r.id] && new Date(o.r.opens)>now() && new Date(o.r.opens)-now()<7*864e5); }).sort((a,b)=>a.s.sort-b.s.sort);
+  const exams = deadlines().filter(x=>x.type==="tentti" && !DONE[x.id] && new Date(x.due)>now() && reqOf(x)!=="ifneed");
+  const week = deadlines().filter(x=>!DONE[x.id] && new Date(x.due)>now() && new Date(x.due)-now()<7*864e5).slice(1,6);
+  const notes = (DATA.notices||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  return `<div class="top"><div><div class="hello">${greet}, Smuel</div><div class="sync ${syncErr?"err":""}">${esc(syncLine())}</div></div><div class="date">${WD[t.getDay()]} ${t.getDate()}. ${MON[t.getMonth()]}</div></div>
+  ${hero()}
+  ${exams.length?`<section><div class="sh"><h3>Tulevat tentit</h3><span style="color:var(--faint);font-size:13px">${exams.length}</span></div><div class="box">${exams.map(examRow).join("")}</div></section>`:""}
+  ${regs.length?`<section><div class="sh"><h3>Ilmoittaudu</h3><button data-go="il">Kaikki</button></div><div class="box">${regs.map(o=>regRow(o.r)).join("")}</div></section>`:""}
+  <section><div class="sh"><h3>${esc(lbl)}</h3><button data-go="lk">Lukkari</button></div>${ls.length?timeline(ls, dayK):'<div class="box empty">Ei tunteja tällä viikolla.</div>'}</section>
+  <section><div class="sh"><h3>Tällä viikolla</h3><button data-go="dl">Kaikki</button></div><div class="box">${week.map(dlRow).join("")||'<div class="empty">Ei muita deadlineja 7 päivän sisällä.</div>'}</div></section>
+  ${notes.length?`<section><div class="sh"><h3>Tiedotteet</h3></div><div class="box">${notes.map(n=>`<div class="notice"><div class="m">${esc(n.course)} · ${esc(n.source)}</div>${esc(n.text)}</div>`).join("")}</div></section>`:""}`;
+}
+function vDl(){
+  let list = deadlines().filter(x=> filter==="kaikki" || x.school===filter);
+  if (!showDone) list = list.filter(x=>!DONE[x.id]);
+  const t0 = new Date(); t0.setHours(0,0,0,0); const monNext = new Date(t0); monNext.setDate(t0.getDate() + ((8 - t0.getDay()) % 7 || 7));
+  const monAfter = new Date(monNext); monAfter.setDate(monNext.getDate()+7);
+  const g = [["Tällä viikolla",[]],["Ensi viikolla",[]],["Myöhemmin",[]]];
+  list.forEach(x=>{ const d=new Date(x.due); (d<monNext?g[0]:d<monAfter?g[1]:g[2])[1].push(x); });
+  const doneCount = deadlines().filter(x=>DONE[x.id]).length;
+  return `<h1 class="ptitle">Deadlinet</h1>
+  <div class="seg">${[["kaikki","Kaikki"],["Yliopisto","UWASA"],["VAMK","VAMK"]].map(([v,l])=>`<button data-f="${v}" aria-pressed="${filter===v}">${l}</button>`).join("")}</div>
+  ${g.filter(x=>x[1].length).map(([h,v])=>`<section style="margin-top:18px"><div class="sh"><h3>${h}</h3><span style="color:var(--faint);font-size:13px">${v.length}</span></div><div class="box">${v.map(dlRow).join("")}</div></section>`).join("") || '<div class="box empty">Ei deadlineja. Nauti.</div>'}
+  ${doneCount?`<div style="text-align:center;margin-top:18px"><button class="btn line" data-sd>${showDone?"Piilota tehdyt":`Näytä tehdyt (${doneCount})`}</button></div>`:""}`;
+}
+function vLk(){
+  const t = new Date(); t.setHours(0,0,0,0);
+  const mon = new Date(t); mon.setDate(t.getDate() - ((t.getDay()+6)%7) + weekOff*7);
+  const days = [...Array(7)].map((_,i)=>{const d=new Date(mon); d.setDate(mon.getDate()+i); return d;});
+  const weekend = days.slice(5).some(d=>lessonsOn(key(d)).length);
+  const shown = weekend ? days : days.slice(0,5);
+  if (!selDay || !shown.some(d=>key(d)===selDay)){
+    const tk = key(t); selDay = shown.some(d=>key(d)===tk) ? tk : key(shown[0]);
+    if (weekOff===0 && !shown.some(d=>key(d)===tk)) selDay = key(shown[0]);
+  }
+  const wn = (()=>{const d=new Date(Date.UTC(mon.getFullYear(),mon.getMonth(),mon.getDate()+3));const y=new Date(Date.UTC(d.getUTCFullYear(),0,4));return 1+Math.round(((d-y)/864e5-3+((y.getUTCDay()+6)%7))/7);})();
+  const ls = lessonsOn(selDay), sd = new Date(selDay+"T12:00");
+  return `<h1 class="ptitle">Lukkari</h1>
+  <div class="wk"><b>Viikko ${wn}${weekOff?"":" · tämä viikko"}</b><div class="nav">${weekOff?'<button data-w="0" aria-label="Tämä viikko" style="width:auto;padding:0 12px;font-size:13px;border-radius:99px">Tänään</button>':""}<button data-w="-1" aria-label="Edellinen viikko">‹</button><button data-w="1" aria-label="Seuraava viikko">›</button></div></div>
+  <div class="days ${weekend?"seven":""}">${shown.map(d=>{const k=key(d), l=lessonsOn(k); return `<button data-d="${k}" aria-pressed="${k===selDay}" class="${k===key(t)?"today":""} ${l.some(x=>x.kind==="tentti")?"ex":""}" style="--o:${l.length?1:0}"><small>${WD[d.getDay()]}</small><b>${d.getDate()}</b><i></i></button>`}).join("")}</div>
+  <div class="sh"><h3>${WDL[sd.getDay()]} ${sd.getDate()}. ${MON[sd.getMonth()]}</h3><span style="color:var(--faint);font-size:13px">${ls.length?ls.length+" tapahtumaa":""}</span></div>
+  ${ls.length?timeline(ls, selDay):'<div class="box empty">Vapaapäivä.</div>'}
+  <p style="color:var(--faint);font-size:13px;margin:14px 4px">Tunnit sun omasta lukkarikoneesta. Mekaniikan labravuorot koskevat vain varaamaasi vuoroa.</p>`;
+}
+function vIl(){
+  const all = (DATA.registrations||[]).map(r=>({r,s:regState(r)})).sort((a,b)=>a.s.sort-b.s.sort);
+  const ex = all.filter(o=>!/^Kurssi-ilmo/.test(o.r.exam)), co = all.filter(o=>/^Kurssi-ilmo/.test(o.r.exam));
+  return `<h1 class="ptitle">Ilmot</h1>
+  <section style="margin-top:0"><div class="sh"><h3>Tentit</h3></div><div class="box">${ex.map(o=>regRow(o.r)).join("")||'<div class="empty">Ei tenttejä.</div>'}</div></section>
+  ${co.length?`<section><div class="sh"><h3>Kevään kurssit</h3></div><div class="box">${co.map(o=>regRow(o.r)).join("")}</div></section>`:""}
+  <p style="color:var(--faint);font-size:13px;margin:14px 4px">Kun olet ilmoittautunut, merkitse se tähän, niin muistutukset loppuvat.</p>`;
+}
+const STAT = {ok:["ok","Hyvällä mallilla"], risk:["hot","Vaatii toimia"], todo:["","Kesken"], fail:["hot","Ei suoritettu"], unknown:["mute","Ei tietoa"]};
+function gbar(b){
+  const W = v => Math.max(0,Math.min(100, v/b.max*100));
+  const marks = (b.marks||[]).map(([v,l])=>`<div style="position:absolute;left:${W(v)}%;top:-3px;bottom:-3px;width:2px;background:var(--bg)"></div><div style="position:absolute;left:${W(v)}%;top:16px;transform:translateX(-50%);font-size:11px;color:var(--faint);font-weight:700">${l}</div>`).join("");
+  const passMark = b.marks ? "" : `<div style="position:absolute;left:${W(b.pass)}%;top:-4px;bottom:-4px;width:2px;background:var(--ink)"></div>`;
+  return `<div style="margin:6px 0 ${b.marks?"26px":"10px"}"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--soft);margin-bottom:6px"><span>${esc(b.label||"Pisteet nyt")}: <b style="color:var(--ink)">${String(b.have).replace(".",",")} ${b.unit}</b></span><span>${b.marks?"läpi "+String(b.pass).replace(".",",")+" / max "+b.max:"vaatimus "+b.pass+" "+b.unit}</span></div>
+    <div style="position:relative;height:12px;border-radius:99px;background:var(--line)">
+      ${b.reach?`<div style="position:absolute;left:0;top:0;bottom:0;width:${W(b.reach)}%;border-radius:99px;background:color-mix(in srgb,var(--accent) 25%,transparent)"></div>`:""}
+      <div style="position:absolute;left:0;top:0;bottom:0;width:${W(b.have)}%;border-radius:99px;background:${b.have>=b.pass?"var(--green)":"var(--accent)"}"></div>${marks}${passMark}</div>
+    ${b.reach?`<div style="font-size:12px;color:var(--faint);margin-top:${b.marks?"22px":"6px"}">Vaalea alue = mihin voit vielä yltää (≈ ${String(b.reach).replace(".",",")} p + läsnäolo). Numerot = arvosanarajat.</div>`:""}</div>`;
+}
+function vPt(){
+  const cs = (GRADES&&GRADES.courses)||[]; const order = {risk:0,fail:1,todo:2,ok:3,unknown:4};
+  const u = GRADES&&GRADES.updated ? new Date(GRADES.updated) : null;
+  return `<h1 class="ptitle">Pisteet</h1>
+  <p style="color:var(--soft);font-size:14px;margin:-6px 4px 16px">Mitä tarvitset läpäisyyn kurssi kerrallaan.${u?` Tarkistettu ${dshort(u)}.`:""}</p>
+  <div style="display:grid;gap:12px">${cs.slice().sort((a,b)=>order[a.status]-order[b.status]).map(c=>{ const s=STAT[c.status]||STAT.unknown, isOpen=open==="g-"+c.id;
+    return `<div class="box"><button class="row" style="grid-template-columns:1fr auto;border:0" data-open="g-${esc(c.id)}" aria-expanded="${isOpen}">
+      <div><div class="n">${esc(c.course)}</div><div class="m">${schChip(c.school)}<span>${esc(c.headline)}</span></div></div><span class="pill ${s[0]}">${s[1]}</span></button>
+      ${isOpen?`<div class="det" style="padding-left:16px;color:var(--ink)">${c.bar?gbar(c.bar):""}
+        <div><div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:6px">Tilanne nyt</div><ul style="margin:0;padding-left:18px;display:grid;gap:4px;color:var(--soft)">${c.now.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+        <div><div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:6px">Mitä tarvitset</div><ul style="margin:0;padding-left:18px;display:grid;gap:6px">${c.need.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+        <p style="font-size:13px;color:var(--faint)">Säännöt: ${esc(c.rules)}</p>
+        ${c.url?`<div class="acts"><a class="btn line" href="${esc(c.url)}" target="_blank" rel="noopener">Avaa kurssi</a></div>`:""}</div>`:""}</div>`; }).join("")}</div>`;
+}
+function syncLine(){ const u = DATA.updated ? new Date(DATA.updated) : null; return (u ? `Päivitetty ${dshort(u)} klo ${hm(u)}` : "") + (syncMsg ? " · " + syncMsg : ""); }
+function render(){
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected", b.dataset.v===view));
+  $m.innerHTML = ({koti:vKoti, dl:vDl, lk:vLk, il:vIl, pt:vPt}[view])();
+}
+function go(v){ view = v; open = null; try{ history.replaceState(null,"","#"+v); }catch(_){} render(); window.scrollTo(0,0); }
+document.querySelector("nav").addEventListener("click", e=>{ const b=e.target.closest("button"); if(b) go(b.dataset.v); });
+window.addEventListener("hashchange", ()=>{ const h=location.hash.slice(1); if(VIEWS.includes(h) && h!==view){ view=h; render(); } });
+$m.addEventListener("click", async e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  if (b.dataset.done){ e.stopPropagation(); const id=b.dataset.done, next={...DONE}; if(next[id]) delete next[id]; else next[id]=true; DONE=next; render();
+    if (doneRef){ try{ await doneRef.set({ids:next}); }catch(err){ if(err&&err.code==="invalid_argument"){canWrite=false;} syncMsg="tallennus ei onnistunut"; syncErr=true; render(); } }
+    else { try{ localStorage.setItem("done", JSON.stringify(next)); }catch(_){} }
+    return; }
+  if (b.dataset.open){ open = open===b.dataset.open ? null : b.dataset.open; render(); return; }
+  if (b.dataset.go){ go(b.dataset.go); return; }
+  if (b.dataset.goDl){ view="dl"; open=b.dataset.goDl; filter="kaikki"; try{history.replaceState(null,"","#dl");}catch(_){} render(); window.scrollTo(0,0); return; }
+  if (b.dataset.f){ filter=b.dataset.f; render(); return; }
+  if (b.hasAttribute("data-sd")){ showDone=!showDone; render(); return; }
+  if (b.dataset.w!==undefined){ weekOff = b.dataset.w==="0" ? 0 : weekOff+Number(b.dataset.w); selDay=null; render(); return; }
+  if (b.dataset.d){ selDay=b.dataset.d; render(); return; }
+});
+try { DONE = JSON.parse(localStorage.getItem("done")||"{}"); } catch(_){}
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decrypt(pin, blob){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(blob.salt), iterations:blob.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(blob.iv)}, key, b64(blob.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+let BLOB = null, locked = false;
+async function fetchBlob(){
+  try { const r = await fetch("data.enc.json?t=" + Date.now(), {cache:"no-store"}); if(!r.ok) throw 0; BLOB = await r.json(); try{ localStorage.setItem("blob", JSON.stringify(BLOB)); }catch(_){} syncMsg=""; syncErr=false; }
+  catch(_){ try{ BLOB = JSON.parse(localStorage.getItem("blob")||"null"); }catch(__){} syncMsg = "offline"; syncErr = !BLOB; }
+}
+async function unlock(pin){
+  const all = await decrypt(pin, BLOB);
+  BASE = all.data || BASE; EXTRA = all.extra || {}; GRADES = all.grades || GRADES; merge();
+  try{ localStorage.setItem("pin", pin); }catch(_){}
+  locked = false; render();
+}
+function lockScreen(msg){
+  locked = true; document.querySelector("nav").style.display="none";
+  $m.innerHTML = `<form class="lock" id="lock"><h1>Opiskelut</h1><p>Syötä PIN-koodi</p><input id="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="12" aria-label="PIN-koodi"><div class="err">${esc(msg||"")}</div><button class="btn" style="justify-self:center;padding:12px 28px">Avaa</button></form>`;
+  const f = document.getElementById("lock"), inp = document.getElementById("pin"); inp.focus();
+  f.addEventListener("submit", async e => { e.preventDefault(); try { await unlock(inp.value.trim()); document.querySelector("nav").style.display=""; } catch(_) { lockScreen("Väärä PIN"); } });
+}
+const _render = render;
+render = function(){ if (!locked) _render(); };
+(async () => {
+  await fetchBlob();
+  if (!BLOB){ $m.innerHTML = '<div class="lock"><h1>Opiskelut</h1><p>Tietoja ei saatu ladattua. Tarkista nettiyhteys.</p></div>'; return; }
+  let pin = null; try{ pin = localStorage.getItem("pin"); }catch(_){}
+  if (pin){ try { await unlock(pin); } catch(_) { lockScreen(); } } else lockScreen();
+})();
+document.addEventListener("visibilitychange", async () => { if (document.visibilityState==="visible" && !locked){ await fetchBlob(); try{ await unlock(localStorage.getItem("pin")); }catch(_){} } });
+setInterval(()=>{ if(!locked && (view==="koti"||view==="dl")) render(); }, 60000);
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
